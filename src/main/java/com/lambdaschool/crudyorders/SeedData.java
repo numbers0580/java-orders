@@ -1,6 +1,6 @@
 package com.lambdaschool.crudyorders;
 
-//import com.github.javafaker.Faker;
+import com.github.javafaker.Faker;
 import com.lambdaschool.crudyorders.models.Agent;
 import com.lambdaschool.crudyorders.models.Customer;
 import com.lambdaschool.crudyorders.models.Order;
@@ -9,6 +9,8 @@ import com.lambdaschool.crudyorders.repositories.AgentRepository;
 import com.lambdaschool.crudyorders.repositories.CustomerRepository;
 import com.lambdaschool.crudyorders.repositories.OrderRepository;
 import com.lambdaschool.crudyorders.repositories.PaymentRepository;
+import com.lambdaschool.crudyorders.services.CustomerService;
+import com.lambdaschool.crudyorders.services.CustomerServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -21,7 +23,7 @@ import java.util.Set;
 
 
 @Transactional
-// @Component
+@Component
 public class SeedData implements CommandLineRunner {
     /**
      * Connects the customer table to this SeedData method
@@ -59,6 +61,7 @@ public class SeedData implements CommandLineRunner {
     @Transactional
     @Override
     public void run(String[] args) throws Exception {
+        Random rand = new Random();
         Payment pay1 = new Payment("Cash");
         Payment pay2 = new Payment("Gift Card");
         Payment pay3 = new Payment("Credit Card");
@@ -530,5 +533,41 @@ public class SeedData implements CommandLineRunner {
         ordersrepos.save(o10);
         ordersrepos.save(o11);
         ordersrepos.save(o12);
+
+        Faker fakeAcct = new Faker(new Locale("en-US"));
+
+        Set<String> custNamesSet = new HashSet<>();
+        for(int i = 0; i < 100; i++) {
+            custNamesSet.add(fakeAcct.name().firstName());
+        }
+
+        for(String custName : custNamesSet) {
+            Customer customer = new Customer();
+            customer.setCustname(custName);
+
+            int randInt = rand.nextInt(10);
+            int randInt2 = rand.nextInt(13) + 2;
+            int smallRand = rand.nextInt(5) + 3;
+            int bigRand = rand.nextInt(25) + 1;
+
+            for(int j = 0; j < randInt; j++) {
+                int rndAmt1 = rand.nextInt(7) + 1;
+                int rndAmt2 = rand.nextInt(22) + 1;
+
+                customer.getOrders().add(new Order(rndAmt1 * 20.00, rndAmt2 * 100.00, customer, ""));
+            }
+
+            customer.setCustcity(fakeAcct.country().capital());
+            customer.setCustcountry(fakeAcct.country().name());
+            customer.setGrade(Integer.toString(smallRand));
+            customer.setOpeningamt(randInt * 1000.0);
+            customer.setOutstandingamt(randInt2 * 1000.0);
+            customer.setPaymentamt(smallRand * 800.0);
+            customer.setPhone(fakeAcct.phoneNumber().cellPhone());
+            customer.setWorkingarea(fakeAcct.country().name());
+            customer.setAgent(a01);
+            customer.setReceiveamt(bigRand * 500);
+            custrepos.save(customer);
+        }
     }
 }
